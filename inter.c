@@ -1,5 +1,10 @@
-#include "raylib.h"
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
 #include <stdbool.h> 
+
+#include "raylib.h"
+
 
 #define FILE_NAME_MAX_SIZE 400 
 #define MAX_IMG_ASSETS     30
@@ -37,12 +42,48 @@ typedef struct {
     char filename[FILE_NAME_MAX_SIZE]; 
     Image image; 
     Texture2D texture; 
+    int flag; // stores the corresponding bit-flag related to the piece 
 } BoardImgAsset; 
 
 typedef struct {
     BoardImgAsset assets[MAX_IMG_ASSETS];
     int count;      
 } BoardImgAssets; 
+
+void AddToChessImgAssets(BoardImgAssets * assets, const char * fname, int flag){
+    BoardImgAsset asset = {0}; 
+    strcpy(asset.filename, fname);
+    asset.image = LoadImage(asset.filename); 
+    asset.texture = LoadTextureFromImage(asset.image); 
+    asset.flag = flag; 
+    assets->assets[assets->count++] = asset; 
+    UnloadImage(asset.image); 
+    printf("Loading image asset: %s\n", fname);
+}
+
+void AddAllChessImgAssets(BoardImgAssets * assets){
+    AddToChessImgAssets(assets, "assets/pawn_black.png", PIECE_BLACK | PIECE_PAWN); 
+    AddToChessImgAssets(assets, "assets/pawn_white.png", PIECE_WHITE | PIECE_PAWN); 
+
+    AddToChessImgAssets(assets, "assets/bishop_black.png", PIECE_BLACK | PIECE_BISHOP); 
+    AddToChessImgAssets(assets, "assets/bishop_white.png", PIECE_WHITE | PIECE_BISHOP); 
+
+    AddToChessImgAssets(assets, "assets/horse_black.png", PIECE_BLACK | PIECE_KNIGHT); 
+    AddToChessImgAssets(assets, "assets/horse_white.png", PIECE_WHITE | PIECE_KNIGHT); 
+
+    AddToChessImgAssets(assets, "assets/king_black.png", PIECE_BLACK | PIECE_KING); 
+    AddToChessImgAssets(assets, "assets/king_white.png", PIECE_WHITE | PIECE_KING); 
+
+    AddToChessImgAssets(assets, "assets/queen_black.png", PIECE_BLACK | PIECE_QUEEN); 
+    AddToChessImgAssets(assets, "assets/queen_white.png", PIECE_WHITE | PIECE_QUEEN); 
+
+    AddToChessImgAssets(assets, "assets/rook_black.png", PIECE_BLACK | PIECE_ROOK); 
+    AddToChessImgAssets(assets, "assets/rook_white.png", PIECE_WHITE | PIECE_ROOK); 
+}
+
+void LoadAllChessImgAssets(){
+
+}
 
 int GetChessBoardCellValue(Board * board, int x, int y){
     int ind = ((y*BOARD_SIZE)+x); 
@@ -81,7 +122,7 @@ void DrawChessBoard(int x, int y, Board * b){
 }
 
 int main(void)
-{
+{   
     const int screenWidth = 1280;
     const int screenHeight = 720;
 
@@ -90,6 +131,8 @@ int main(void)
     SetTargetFPS(60);        
     
     Board board = {0}; 
+    BoardImgAssets assets = {0}; 
+    AddAllChessImgAssets(&assets);
 
     while (!WindowShouldClose())   
     {        
