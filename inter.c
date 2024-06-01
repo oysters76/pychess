@@ -6,8 +6,9 @@
 #include "raylib.h"
 
 
-#define FILE_NAME_MAX_SIZE 400 
-#define MAX_IMG_ASSETS     30
+#define FILE_NAME_MAX_SIZE    400 
+#define MAX_IMG_ASSETS        30
+#define BOARD_CONFIG_MAX_SIZE 15 
 
 #define BOARD_SIZE      8 
 #define BOARD_CELL_SIZE 70 
@@ -50,6 +51,12 @@ typedef struct {
     BoardImgAsset assets[MAX_IMG_ASSETS];
     int count;      
 } BoardImgAssets; 
+
+typedef struct {
+    Board boards[BOARD_CONFIG_MAX_SIZE];
+    int count; 
+    int currentBoard; 
+} BoardConfigurations;
 
 void AddToChessImgAssets(BoardImgAssets * assets, const char * fname, int flag){
     BoardImgAsset asset = {0}; 
@@ -117,11 +124,25 @@ BoardImgAsset * FindChessAsset(BoardImgAssets * assets, int flag){
  return NULL; 
 }
 
+void AddBoardToBoardConfig(BoardConfigurations * config){
+    if (config == NULL) return; 
+    if (config->count >= BOARD_CONFIG_MAX_SIZE) return; 
+    config->boards[config->count++] = InitChessBoard(); 
+}
+
 void AddChessPiece(Board * b, int gridX, int gridY, int flag){
   int ind = GetChessBoardIndex(gridX, gridY); 
   if (ind == OUT_OF_BOUNDS) return; 
   b->board[ind] = flag; 
 }
+
+void AddChessPieceToBoard(BoardConfigurations * config, int boardInd, int gridX, int gridY, int flag){
+    if (config == NULL) return; 
+    if (boardInd < 0 || boardInd >= config->count) return; 
+    AddChessPiece(&(config->boards[boardInd]), gridX, gridY, flag); 
+}
+
+
 
 void DrawChessBoard(Board * b, BoardImgAssets * assets, int x, int y){
     bool flag = true; 
@@ -159,18 +180,44 @@ int main(void)
 
     SetTargetFPS(60);        
     
-    Board board = {0}; 
+    
     BoardImgAssets assets = {0}; 
     AddAllChessImgAssets(&assets);
-    AddChessPiece(&board, 0, 0, (PIECE_BLACK | PIECE_KING)); 
-    AddChessPiece(&board, 3, 5, (PIECE_BLACK | PIECE_QUEEN)); 
-    AddChessPiece(&board, 4, 4, (PIECE_WHITE | PIECE_BISHOP)); 
 
+    BoardConfigurations boardConfigs = {0}; 
+   
+    AddBoardToBoardConfig(&boardConfigs);
+    AddChessPieceToBoard(&boardConfigs, 0, 0, 0, (PIECE_BISHOP | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 1, 1, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 3, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 3, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 5, 5, (PIECE_PAWN | PIECE_WHITE)); 
+
+    AddBoardToBoardConfig(&boardConfigs);
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 1, (PIECE_KNIGHT | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 2, 3, (PIECE_QUEEN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 3, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 5, 5, (PIECE_PAWN | PIECE_WHITE));  
+   
     while (!WindowShouldClose())   
     {        
+        if (IsKeyReleased(KEY_RIGHT)) {
+         boardConfigs.currentBoard += 1; 
+         boardConfigs.currentBoard %= boardConfigs.count; 
+        }
+
+        if (IsKeyReleased(KEY_LEFT)) {
+         boardConfigs.currentBoard += 1; 
+         boardConfigs.currentBoard %= boardConfigs.count; 
+        }
+
+
+        printf("%d\n", boardConfigs.currentBoard);
+
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawChessBoard(&board, &assets, BOARD_POS_X, BOARD_POS_Y);       
+            DrawChessBoard(&boardConfigs.boards[boardConfigs.currentBoard],
+                                     &assets, BOARD_POS_X, BOARD_POS_Y);       
         EndDrawing();
     }
    
