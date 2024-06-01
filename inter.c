@@ -13,12 +13,13 @@
 #define BOARD_CELL_SIZE 70 
 #define BOARD_POS_X     50 
 #define BOARD_POS_Y     50
+#define OFFSET_CONST    16
 
 #define STATE_INIT_CONFIG    0 
 #define STATE_RENDER_INTERPL 1 
 #define STATE_PAUSED         2 
 
-#define NONE                 -1 
+#define PIECE_NONE           -1 
 #define PIECE_BLACK          0x0   // 0000 0000
 #define PIECE_WHITE          0x1   // 0000 0001 
 
@@ -61,6 +62,13 @@ void AddToChessImgAssets(BoardImgAssets * assets, const char * fname, int flag){
     printf("Loading image asset: %s\n", fname);
 }
 
+void UnLoadAllChessAssets(BoardImgAssets * assets){
+    for (int i = 0; i < assets->count; i++){
+         printf("Unloading textures for : %s\n", assets->assets[i].filename); 
+         UnloadTexture(assets->assets[i].texture);    
+    }
+}
+
 void AddAllChessImgAssets(BoardImgAssets * assets){
     AddToChessImgAssets(assets, "assets/pawn_black.png", PIECE_BLACK | PIECE_PAWN); 
     AddToChessImgAssets(assets, "assets/pawn_white.png", PIECE_WHITE | PIECE_PAWN); 
@@ -81,12 +89,12 @@ void AddAllChessImgAssets(BoardImgAssets * assets){
     AddToChessImgAssets(assets, "assets/rook_white.png", PIECE_WHITE | PIECE_ROOK); 
 }
 
-void LoadAllChessImgAssets(){
-
+int GetChessBoardIndex(int x, int y){
+    return ((y*BOARD_SIZE)+x); 
 }
 
 int GetChessBoardCellValue(Board * board, int x, int y){
-    int ind = ((y*BOARD_SIZE)+x); 
+    int ind = GetChessBoardIndex(x, y); 
     if (ind < 0 || ind >= BOARD_SIZE*BOARD_SIZE) return OUT_OF_BOUNDS; 
     return board->board[ind]; 
 }
@@ -95,13 +103,27 @@ Board InitChessBoard(){
     Board b; 
     for (int i = 0; i < BOARD_SIZE; i++){
         for (int j = 0; j < BOARD_SIZE; j++){
-            b.board[(i*BOARD_SIZE)+j] = NONE; 
+            b.board[(i*BOARD_SIZE)+j] = PIECE_NONE; 
         }
     }
     return b; 
 }
 
-void DrawChessBoard(int x, int y, Board * b){
+BoardImgAsset * FindChessAsset(BoardImgAssets * assets, int flag){
+ for (int i = 0; i < assets->count; i++){
+    BoardImgAsset ast = assets->assets[i]; 
+    if (ast.flag == flag) return &(assets->assets[i]); 
+ }
+ return NULL; 
+}
+
+void AddChessPiece(Board * b, int gridX, int gridY, int flag){
+  int ind = GetChessBoardIndex(gridX, gridY); 
+  if (ind == OUT_OF_BOUNDS) return; 
+  b->board[ind] = flag; 
+}
+
+void DrawChessBoard(Board * b, BoardImgAssets * assets, int x, int y){
     bool flag = true; 
     for (int i = 0; i < BOARD_SIZE; i++){
         for (int j = 0; j < BOARD_SIZE; j++){
@@ -110,7 +132,14 @@ void DrawChessBoard(int x, int y, Board * b){
             Color c = flag ? FOREGROUND_CELL : BACKGROUND_CELL; 
             DrawRectangle(x, y, BOARD_CELL_SIZE, BOARD_CELL_SIZE, c);
 
-            //draw texture 
+            //draw texture if there is a piece on that cell 
+            if (cell_value != PIECE_NONE){
+                BoardImgAsset * asset = FindChessAsset(assets, cell_value);
+                if (asset != NULL){
+                    DrawTexture(asset->texture,    
+                    (x+(BOARD_CELL_SIZE/OFFSET_CONST)), (y+(BOARD_CELL_SIZE/OFFSET_CONST)), WHITE); 
+                }                 
+            }
 
             flag = !flag; 
             x += BOARD_CELL_SIZE;  
@@ -133,15 +162,19 @@ int main(void)
     Board board = {0}; 
     BoardImgAssets assets = {0}; 
     AddAllChessImgAssets(&assets);
+    AddChessPiece(&board, 0, 0, (PIECE_BLACK | PIECE_KING)); 
+    AddChessPiece(&board, 3, 5, (PIECE_BLACK | PIECE_QUEEN)); 
+    AddChessPiece(&board, 4, 4, (PIECE_WHITE | PIECE_BISHOP)); 
 
     while (!WindowShouldClose())   
     {        
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawChessBoard(BOARD_POS_X, BOARD_POS_Y, &board);       
+            DrawChessBoard(&board, &assets, BOARD_POS_X, BOARD_POS_Y);       
         EndDrawing();
     }
-
+   
+   UnLoadAllChessAssets(&assets); 
    CloseWindow();  
    
     return 0;
