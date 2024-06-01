@@ -28,3 +28,9 @@ clean:
 
 # Phony targets to avoid conflicts with files named 'all' or 'clean'
 .PHONY: all clean
+
+EXAMPLE_IMAGE_SRC = image_example.c 
+EMAMPLE_IMAGE_TGT = image_example 
+
+img_example: 
+	$(CC) $(CFLAGS) -o img_example image_example.c $(LIBS)
