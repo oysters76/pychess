@@ -287,6 +287,10 @@ void FindDiff(BoardDiffs * boardDiffs, Board * currentBoard, Board * nextBoard){
                                 BoardDiff diff = {0}; 
                                 diff.flag = pieceCount.flag; 
                                 diff.type = BOARD_DIFF_TYPE_REMOVED;
+                                diff.currGridY = pieceCount.piecePos[a*2]; 
+                                diff.currGridX = pieceCount.piecePos[(a*2)+1]; 
+                                diff.tgtGridY  = otherPieceCount.piecePos[a*2]; 
+                                diff.tgtGridX  = otherPieceCount.piecePos[(a*2)+1];
                                 boardDiffs->diffs[boardDiffs->count++] = diff; 
                             }else{
                                 BoardDiff diff = {0}; 
@@ -309,6 +313,10 @@ void FindDiff(BoardDiffs * boardDiffs, Board * currentBoard, Board * nextBoard){
                                 BoardDiff diff = {0}; 
                                 diff.flag = pieceCount.flag; 
                                 diff.type = BOARD_DIFF_TYPE_APPEARED;
+                                diff.currGridY = pieceCount.piecePos[a*2]; 
+                                diff.currGridX = pieceCount.piecePos[(a*2)+1]; 
+                                diff.tgtGridY  = otherPieceCount.piecePos[a*2]; 
+                                diff.tgtGridX  = otherPieceCount.piecePos[(a*2)+1];
                                 boardDiffs->diffs[boardDiffs->count++] = diff; 
                             }else{
                                 BoardDiff diff = {0}; 
@@ -378,15 +386,18 @@ char * GetPieceAnimationName(int type){
     return "ERR"; 
 }
 
+void PrintOnlyDiff(int i, BoardDiff * diff){
+        char * pieceName = GetFullPieceName(diff->flag); 
+        char * animationName = GetPieceAnimationName(diff->type); 
+        printf("Diff %d: Piece: %s Type: %s CurrentX: %d CurrentY: %d TgtX: %d TgtY: %d\n", 
+            i+1, pieceName, animationName, diff->currGridX, diff->currGridY, diff->tgtGridX, diff->tgtGridY);
+        free(pieceName); 
+}
+
 void PrintBoardDiff(BoardDiffs * diffs){
     if (diffs == NULL) return; 
     for (int i = 0; i < diffs->count; i++){
-        BoardDiff diff = diffs->diffs[i]; 
-        char * pieceName = GetFullPieceName(diff.flag); 
-        char * animationName = GetPieceAnimationName(diff.type); 
-        printf("Diff %d: Piece: %s Type: %s CurrentX: %d CurrentY: %d TgtX: %d TgtY: %d\n", 
-            i+1, pieceName, animationName, diff.currGridX, diff.currGridY, diff.tgtGridX, diff.tgtGridY);
-        free(pieceName);  
+         PrintOnlyDiff(i, &(diffs->diffs[i])); 
     }
 }
 
@@ -449,12 +460,27 @@ void DrawOnlyDiffPiece(BoardDiff * diff, BoardImgAssets * assets, double animati
         double offset = easeFunction(animationFrame); 
         x += (tx-x)*offset;
         y += (ty-y)*offset;  
-        printf("moving: %f, %f\n", x, y);
+       
     }
-    if (diff->type != BOARD_DIFF_TYPE_REMOVED || diff->type != BOARD_DIFF_TYPE_APPEARED)
+    if (diff->type != BOARD_DIFF_TYPE_REMOVED && diff->type != BOARD_DIFF_TYPE_APPEARED)
     {
         DrawTexture(asset->texture,    
                     (x+(BOARD_CELL_SIZE/OFFSET_CONST)), (y+(BOARD_CELL_SIZE/OFFSET_CONST)), WHITE);
+    }else{
+         double offset = easeFunction(animationFrame); 
+         if (diff->type == BOARD_DIFF_TYPE_REMOVED){
+            printf("removing\n");
+             double alpha = (1-offset);
+             DrawTexture(asset->texture,    
+                    (x+(BOARD_CELL_SIZE/OFFSET_CONST)), (y+(BOARD_CELL_SIZE/OFFSET_CONST)), Fade(WHITE, alpha));
+         }else if (diff->type == BOARD_DIFF_TYPE_APPEARED){
+            double tx = BOARD_POS_X + ((diff->tgtGridX)*BOARD_CELL_SIZE);
+            double ty = BOARD_POS_Y + ((diff->tgtGridY)*BOARD_CELL_SIZE);   
+            double alpha = offset;
+              printf("adding\n");
+            DrawTexture(asset->texture,    
+                    (tx+(BOARD_CELL_SIZE/OFFSET_CONST)), (ty+(BOARD_CELL_SIZE/OFFSET_CONST)), Fade(WHITE, alpha));
+         }
     }
 }   
 
