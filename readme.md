@@ -52,4 +52,7 @@ sudo make install
 
 https://github.com/oysters76/pychess/assets/75514064/a84c54a5-7d95-4aa6-98b9-050b07eab467
 
+#### Demo with the "easeInOutBack" function 
+
+https://github.com/oysters76/pychess/assets/75514064/ebd3d4ed-045e-4e6e-a7d7-f7fcfacb182d
 
