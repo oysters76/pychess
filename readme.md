@@ -15,7 +15,7 @@ Planning on adding some GPT flair on this and give AI commentary.
 
 ## Inter.C 
 
-A simple raylib program to interpolate between chess board configurations. 
+A simple raylib program to interpolate between chess board configurations built from scratch using raylib. 
 
 ## Raylib installation (Linux/Ubuntu) 
 
