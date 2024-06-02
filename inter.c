@@ -2,6 +2,11 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <stdbool.h> 
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #include "raylib.h"
 
@@ -76,6 +81,12 @@ typedef struct {
       int currGridY; 
       int tgtGridX; 
       int tgtGridY; 
+
+     //animation parameters
+      int currentX; 
+      int currentY; 
+      int opacity;    
+
 } BoardDiff; 
 
 typedef struct {
@@ -94,6 +105,11 @@ typedef struct {
     PieceCount counts[PIECE_COUNT_MAX]; 
     int count; 
 } PieceCounts; 
+
+
+double easeFunction(double x) {
+    return -(cos(M_PI * x) - 1) / 2;
+}
 
 void AddToChessImgAssets(BoardImgAssets * assets, const char * fname, int flag){
     BoardImgAsset asset = {0}; 
@@ -255,6 +271,7 @@ void FindDiff(BoardDiffs * boardDiffs, Board * currentBoard, Board * nextBoard){
                         diff.currGridX = pieceCount.piecePos[(a*2)+1]; 
                         diff.tgtGridY  = otherPieceCount.piecePos[a*2]; 
                         diff.tgtGridX  = otherPieceCount.piecePos[(a*2)+1]; 
+                        printf("%d %d %d %d\n", diff.currGridX, diff.currGridY, diff.tgtGridX, diff.tgtGridY);
                         if (diff.currGridX == diff.tgtGridX && diff.currGridY == diff.tgtGridY){
                             diff.type = BOARD_DIFF_NO_DIFF;
                         }
@@ -399,6 +416,52 @@ void DrawChessBoard(Board * b, BoardImgAssets * assets, int x, int y){
     }
 }
 
+void DrawOnlyChessBoard(int x, int y){
+    bool flag = true; 
+    for (int i = 0; i < BOARD_SIZE; i++){
+        for (int j = 0; j < BOARD_SIZE; j++){
+
+            Color c = flag ? FOREGROUND_CELL : BACKGROUND_CELL; 
+            DrawRectangle(x, y, BOARD_CELL_SIZE, BOARD_CELL_SIZE, c);
+
+            flag = !flag; 
+            x += BOARD_CELL_SIZE;  
+        }
+        y += BOARD_CELL_SIZE; 
+        x = BOARD_POS_X;
+        flag = !flag; 
+    }
+}
+
+void DrawOnlyDiffPiece(BoardDiff * diff, BoardImgAssets * assets, double animationFrame){
+    if (diff == NULL) return; 
+    
+    BoardImgAsset * asset = FindChessAsset(assets, diff->flag);
+    if (asset == NULL) return; 
+    double x = BOARD_POS_X + ((diff->currGridX)*BOARD_CELL_SIZE);
+    double y = BOARD_POS_Y + ((diff->currGridY)*BOARD_CELL_SIZE);  
+
+    if (diff->type == BOARD_DIFF_TYPE_MOVED){        
+        double tx = BOARD_POS_X + ((diff->tgtGridX)*BOARD_CELL_SIZE);
+        double ty = BOARD_POS_Y + ((diff->tgtGridY)*BOARD_CELL_SIZE); 
+
+        double offset = easeFunction(animationFrame); 
+        x += (tx-x)*offset;
+        y += (ty-y)*offset;  
+        printf("moving: %f, %f\n", x, y);
+    }
+    if (diff->type != BOARD_DIFF_TYPE_REMOVED || diff->type != BOARD_DIFF_TYPE_APPEARED)
+    {
+        DrawTexture(asset->texture,    
+                    (x+(BOARD_CELL_SIZE/OFFSET_CONST)), (y+(BOARD_CELL_SIZE/OFFSET_CONST)), WHITE);
+    }
+}   
+
+
+void ResetBoardDiffs(BoardDiffs * diffs){
+    memset(diffs, 0, sizeof(BoardDiffs));
+}
+
 int main(void)
 {   
     const int screenWidth = 1280;
@@ -408,6 +471,8 @@ int main(void)
 
     SetTargetFPS(60);        
     
+    int state = STATE_INIT_CONFIG; 
+    float animationProgress = 0.0; 
     
     BoardImgAssets assets = {0}; 
     AddAllChessImgAssets(&assets);
@@ -421,35 +486,58 @@ int main(void)
     AddChessPieceToBoard(&boardConfigs, 0, 2, 5, (PIECE_KNIGHT | PIECE_WHITE)); 
 
     AddBoardToBoardConfig(&boardConfigs);
-    AddChessPieceToBoard(&boardConfigs, 1, 3, 2, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 1, 5, 5, (PIECE_PAWN | PIECE_WHITE));  
-    AddChessPieceToBoard(&boardConfigs, 1, 3, 5, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 1, 4, 5, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 4, 4, (PIECE_PAWN | PIECE_WHITE));  
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 1, (PIECE_PAWN | PIECE_WHITE)); 
 
     BoardDiffs diffs = {0}; 
     FindDiff(&diffs, &boardConfigs.boards[0], &boardConfigs.boards[1]); 
     PrintBoardDiff(&diffs);
 
     while (!WindowShouldClose())   
-    {        
-        if (IsKeyReleased(KEY_RIGHT)) {
+    {   
+        if (IsKeyReleased(KEY_RIGHT) && state != STATE_RENDER_INTERPL && boardConfigs.currentBoard != boardConfigs.count-1) {
          boardConfigs.currentBoard += 1; 
-         boardConfigs.currentBoard %= boardConfigs.count; 
+         boardConfigs.currentBoard %= boardConfigs.count;
+         
+         ResetBoardDiffs(&diffs);
+         int prevBoardInd = (boardConfigs.currentBoard - 1) % boardConfigs.count; 
+         FindDiff(&diffs, &boardConfigs.boards[prevBoardInd], &boardConfigs.boards[boardConfigs.currentBoard]); 
+         state =  STATE_RENDER_INTERPL; 
         }
 
-        if (IsKeyReleased(KEY_LEFT)) {
-         boardConfigs.currentBoard += 1; 
+        if (IsKeyReleased(KEY_LEFT) && state != STATE_RENDER_INTERPL && boardConfigs.currentBoard != 0) {
+         boardConfigs.currentBoard -= 1; 
          boardConfigs.currentBoard %= boardConfigs.count; 
+
+         ResetBoardDiffs(&diffs);
+         int prevBoardInd = (boardConfigs.currentBoard + 1) % boardConfigs.count; 
+         FindDiff(&diffs, &boardConfigs.boards[prevBoardInd], &boardConfigs.boards[boardConfigs.currentBoard]); 
+         state =  STATE_RENDER_INTERPL; 
         }
-
-
-        printf("%d\n", boardConfigs.currentBoard);
 
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawChessBoard(&boardConfigs.boards[boardConfigs.currentBoard],
-                                     &assets, BOARD_POS_X, BOARD_POS_Y);       
+            if (state == STATE_RENDER_INTERPL){
+                DrawOnlyChessBoard(BOARD_POS_X, BOARD_POS_Y);
+                for (int i = 0; i < diffs.count; i++){
+                    DrawOnlyDiffPiece(&(diffs.diffs[i]), &assets, animationProgress); 
+                }
+            }else{
+                DrawChessBoard(&boardConfigs.boards[boardConfigs.currentBoard],
+                                     &assets, BOARD_POS_X, BOARD_POS_Y);  
+            }  
         EndDrawing();
+
+        if (state == STATE_RENDER_INTERPL)
+            animationProgress += 0.1;
+
+        if (animationProgress >= 1){
+            state = STATE_INIT_CONFIG; 
+            animationProgress = 0; 
+        }
+
+        printf("animation progress: %f\n", animationProgress);
     }
    
    UnLoadAllChessAssets(&assets); 
