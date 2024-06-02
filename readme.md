@@ -29,6 +29,8 @@ sudo apt install build-essential git
 sudo apt install libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
 ```
 
+
+
 3. Clone the source 
 ```
 git clone https://github.com/raysan5/raylib.git raylib
@@ -45,3 +47,9 @@ sudo make install
 ```
  make && ./inter
 ```
+
+### Inter.c Demo (Chess Position Smooth interpolation) 
+
+https://github.com/oysters76/pychess/assets/75514064/a84c54a5-7d95-4aa6-98b9-050b07eab467
+
+
