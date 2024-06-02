@@ -47,6 +47,7 @@
 #define PIECE_SIZE              6
 
 #define OUT_OF_BOUNDS        -1000
+#define ANIMATION_SPEED      0.01
 
 const Color FOREGROUND_CELL = RED; 
 const Color BACKGROUND_CELL = GREEN;
@@ -192,7 +193,7 @@ void AddChessPiece(Board * b, int gridX, int gridY, int flag){
 void AddChessPieceToBoard(BoardConfigurations * config, int boardInd, int gridX, int gridY, int flag){
     if (config == NULL) return; 
     if (boardInd < 0 || boardInd >= config->count) return; 
-    AddChessPiece(&(config->boards[boardInd]), gridX, gridY, flag); 
+    AddChessPiece(&(config->boards[boardInd]), gridX-1, gridY-1, flag); 
 }
 
 PieceCounts InitBoardPieceCounts(){
@@ -480,15 +481,55 @@ int main(void)
     BoardConfigurations boardConfigs = {0}; 
    
     AddBoardToBoardConfig(&boardConfigs);
-    AddChessPieceToBoard(&boardConfigs, 0, 3, 2, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 0, 5, 5, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 0, 1, 5, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 0, 2, 5, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 1, (PIECE_KING | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 3, 1, (PIECE_ROOK | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 6, 1, (PIECE_BISHOP | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 8, 1, (PIECE_ROOK | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 1, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 4, 2, (PIECE_BISHOP | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 6, 2, (PIECE_QUEEN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 7, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 6, 3, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 8, 3, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 4, (PIECE_KNIGHT | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 3, 4, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 5, 4, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 6, 5, (PIECE_BISHOP | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 7, 5, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 4, 6, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 1, 7, (PIECE_KNIGHT | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 7, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 3, 7, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 5, 7, (PIECE_KNIGHT | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 7, 7, (PIECE_BISHOP | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 8, 7, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 2, 8, (PIECE_KING | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 3, 8, (PIECE_ROOK | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 5, 8, (PIECE_QUEEN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 0, 6, 8, (PIECE_ROOK | PIECE_BLACK)); 
 
     AddBoardToBoardConfig(&boardConfigs);
-    AddChessPieceToBoard(&boardConfigs, 1, 1, 2, (PIECE_PAWN | PIECE_WHITE)); 
-    AddChessPieceToBoard(&boardConfigs, 1, 4, 4, (PIECE_PAWN | PIECE_WHITE));  
-    AddChessPieceToBoard(&boardConfigs, 1, 1, 1, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 1, (PIECE_ROOK | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 6, 1, (PIECE_KING | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 8, 1, (PIECE_ROOK | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 2, 2, (PIECE_BISHOP | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 5, 2, (PIECE_BISHOP | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 6, 2, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 7, 2, (PIECE_ROOK | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 3, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 6, 3, (PIECE_KNIGHT | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 4, 4, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 5, 5, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 8, 5, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 2, 6, (PIECE_QUEEN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 5, 6, (PIECE_BISHOP | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 8, 6, (PIECE_BISHOP | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 1, 7, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 2, 7, (PIECE_PAWN | PIECE_BLACK)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 3, 7, (PIECE_PAWN | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 2, 8, (PIECE_KING | PIECE_WHITE)); 
+    AddChessPieceToBoard(&boardConfigs, 1, 7, 8, (PIECE_ROOK | PIECE_WHITE)); 
 
     BoardDiffs diffs = {0}; 
     FindDiff(&diffs, &boardConfigs.boards[0], &boardConfigs.boards[1]); 
@@ -530,7 +571,7 @@ int main(void)
         EndDrawing();
 
         if (state == STATE_RENDER_INTERPL)
-            animationProgress += 0.1;
+            animationProgress += ANIMATION_SPEED;
 
         if (animationProgress >= 1){
             state = STATE_INIT_CONFIG; 
