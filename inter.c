@@ -108,8 +108,19 @@ typedef struct {
 } PieceCounts; 
 
 
-double easeFunction(double x) {
+double easeFunction2(double x) {
     return -(cos(M_PI * x) - 1) / 2;
+}
+
+double easeFunction(double x) {
+    const double c1 = 1.70158;
+    const double c2 = c1 * 1.525;
+
+    if (x < 0.5) {
+        return (pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2;
+    } else {
+        return (pow(2 * x - 2, 2) * ((c2 + 1) * (2 * x - 2) + c2) + 2) / 2;
+    }
 }
 
 void AddToChessImgAssets(BoardImgAssets * assets, const char * fname, int flag){
