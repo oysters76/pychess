@@ -272,7 +272,6 @@ void FindDiff(BoardDiffs * boardDiffs, Board * currentBoard, Board * nextBoard){
                         diff.currGridX = pieceCount.piecePos[(a*2)+1]; 
                         diff.tgtGridY  = otherPieceCount.piecePos[a*2]; 
                         diff.tgtGridX  = otherPieceCount.piecePos[(a*2)+1]; 
-                        printf("%d %d %d %d\n", diff.currGridX, diff.currGridY, diff.tgtGridX, diff.tgtGridY);
                         if (diff.currGridX == diff.tgtGridX && diff.currGridY == diff.tgtGridY){
                             diff.type = BOARD_DIFF_NO_DIFF;
                         }
@@ -469,7 +468,6 @@ void DrawOnlyDiffPiece(BoardDiff * diff, BoardImgAssets * assets, double animati
     }else{
          double offset = easeFunction(animationFrame); 
          if (diff->type == BOARD_DIFF_TYPE_REMOVED){
-            printf("removing\n");
              double alpha = (1-offset);
              DrawTexture(asset->texture,    
                     (x+(BOARD_CELL_SIZE/OFFSET_CONST)), (y+(BOARD_CELL_SIZE/OFFSET_CONST)), Fade(WHITE, alpha));
@@ -477,7 +475,6 @@ void DrawOnlyDiffPiece(BoardDiff * diff, BoardImgAssets * assets, double animati
             double tx = BOARD_POS_X + ((diff->tgtGridX)*BOARD_CELL_SIZE);
             double ty = BOARD_POS_Y + ((diff->tgtGridY)*BOARD_CELL_SIZE);   
             double alpha = offset;
-              printf("adding\n");
             DrawTexture(asset->texture,    
                     (tx+(BOARD_CELL_SIZE/OFFSET_CONST)), (ty+(BOARD_CELL_SIZE/OFFSET_CONST)), Fade(WHITE, alpha));
          }
@@ -603,8 +600,6 @@ int main(void)
             state = STATE_INIT_CONFIG; 
             animationProgress = 0; 
         }
-
-        printf("animation progress: %f\n", animationProgress);
     }
    
    UnLoadAllChessAssets(&assets); 
