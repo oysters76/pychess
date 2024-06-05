@@ -17,7 +17,7 @@ Planning on adding some GPT flair on this and give AI commentary.
 
 A simple raylib program to interpolate between chess board configurations built from scratch using raylib. 
 
-## Raylib installation (Linux/Ubuntu) 
+## Raylib installation (Linux/Debian) 
 
 1. Install git and make 
 ```
